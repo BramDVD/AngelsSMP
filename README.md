@@ -34,4 +34,4 @@ AngelsSMP is a Minecraft plugin that introduces Angel Books, each with unique ab
 
 For support, please open an issue on the GitHub repository or contact the plugin developer directly.
 Or join the Discord server for community support and discussions.
-# https://discord.gg/Qss9T6kDYY
+# https://dsc.gg/smpstore
