@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.*;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
+import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 
 public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
@@ -37,8 +37,8 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
             public void run() {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     long cd = cooldowns.getOrDefault(p.getUniqueId(), 0L);
-                    long left = (System.currentTimeMillis() - cd);
-                    String msg = left >= 60000 || cd == 0 ? "§aReady" : "§cCooldown: " + ((60000 - left) / 1000) + "s";
+                    long left = System.currentTimeMillis() - cd;
+                    String msg = left >= 60000 || cd == 0 ? "§aReady" : "§cCooldown: " + ((60000 - left + 999) / 1000) + "s";
                     p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(msg));
                 }
             }
@@ -103,22 +103,6 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
         this.playerBooks.put(p.getUniqueId(), selected);
         p.openInventory(gui);
         p.sendMessage("§eOpening crate... You got §6" + selected + "§e!");
-
-        // Sluit de GUI na 10 seconden
-        new BukkitRunnable() {
-            public void run() {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    long cd = cooldowns.getOrDefault(p.getUniqueId(), 0L);
-                    long left = 60000 - (System.currentTimeMillis() - cd);
-                    if (left <= 0 || cd == 0) {
-                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§aReady"));
-                    } else {
-                        long secondsLeft = (left + 999) / 1000; // Rond naar boven af
-                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("§cCooldown: " + secondsLeft + "s"));
-                    }
-                }
-            }
-        }.runTaskTimer(this, 0, 20);
     }
 
     private void giveAngelBook(Player p, String name) {
@@ -143,10 +127,27 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
         meta.setDisplayName("§6Angel Book: " + name);
         meta.setLore(List.of("§7Shift + Right Click to activate ability", "§fPower: " + name));
         meta.setUnbreakable(true);
-        meta.addEnchant(Enchantment.LUCK_OF_THE_SEA, 1, true);
+        meta.addEnchant(Enchantment.MENDING, 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
+
+        meta.getPersistentDataContainer().set(new NamespacedKey(this, "untradeable"), PersistentDataType.BYTE, (byte) 1);
+
         book.setItemMeta(meta);
         return book;
+    }
+
+    @EventHandler
+    public void onVillagerTrade(VillagerAcquireTradeEvent event) {
+        MerchantRecipe recipe = event.getRecipe();
+        for (ItemStack item : recipe.getIngredients()) {
+            if (item != null && item.hasItemMeta()) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta.getPersistentDataContainer().has(new NamespacedKey(this, "untradeable"), PersistentDataType.BYTE)) {
+                    event.setCancelled(true);
+                    break;
+                }
+            }
+        }
     }
 
     @EventHandler
@@ -276,4 +277,5 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
 
         return false;
     }
+
 }
