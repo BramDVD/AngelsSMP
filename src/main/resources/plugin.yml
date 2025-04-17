@@ -1,0 +1,17 @@
+name: AngelsSMP
+version: 1.0
+main: me.bram.angelssmp.AngelsSMP
+api-version: 1.21
+commands:
+  givebook:
+    description: Gives an Angel Book to a player
+    usage: /givebook <player> <Zoe|Kore|Rhea|Lilana|Vasia|Charikleia>
+  angelgui:
+    description: Opens the Angel Book GUI
+    usage: /angelgui
+  myangel:
+    description: Shows your current Angel Book
+    usage: /myangel
+  book:
+    description: Gives you your saved Angel Book
+    usage: /book
