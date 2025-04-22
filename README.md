@@ -18,7 +18,7 @@ AngelsSMP is a Minecraft plugin that introduces Angel Books, each with unique ab
 - `/givebook <player> <book>`: (Admin only) Assign a specific Angel Book to a player.
 
 ## Permissions
-
+'
 - `angelsmp.command.book`: Allows players to use the `/book` command.
 - Admin commands like `/givebook` require the player to have operator (`op`) privileges.
 
