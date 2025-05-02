@@ -231,7 +231,7 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
                 fireball.setVelocity(p.getEyeLocation().getDirection().multiply(1.5));
                 fireball.setIsIncendiary(true);
 
-                new BukkitRunnable() {
+                BukkitRunnable particleTask = new BukkitRunnable() {
                     public void run() {
                         if (fireball.isDead()) {
                             this.cancel();
@@ -246,7 +246,11 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
                             fbLoc.getBlock().setType(Material.FIRE);
                         }
                     }
-                }.runTaskTimer(this, 0, 1);
+                };
+                particleTask.runTaskTimer(this, 0, 1);
+
+                // Stop the particle task after 3 seconds
+                Bukkit.getScheduler().runTaskLater(this, particleTask::cancel, 60L);
 
                 p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 200, 0));
                 world.spawnParticle(Particle.LAVA, loc, 30, 1, 1, 1);
@@ -258,11 +262,15 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
                         public void run() {
                             double radius = 2.0 + (tier * 0.8);
                             for (int j = 0; j < 36; j++) {
-                                double angle = j * 10 + (System.currentTimeMillis()/50 % 360);
+                                double angle = j * 10 + (System.currentTimeMillis() / 50 % 360);
                                 double x = radius * Math.cos(Math.toRadians(angle));
                                 double z = radius * Math.sin(Math.toRadians(angle));
                                 Location particleLoc = loc.clone().add(x, 0.2, z);
                                 world.spawnParticle(Particle.FLAME, particleLoc, 1);
+                                if (fireball.isDead()) {
+                                    this.cancel();
+                                    return;
+                                }
                             }
                         }
                     }.runTaskTimer(this, i * 5, 1);
