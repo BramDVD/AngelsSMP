@@ -25,6 +25,7 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
     private final Map<UUID, String> playerBooks = new HashMap<>();
     private final Map<UUID, Long> cooldowns = new HashMap<>();
     private final NamespacedKey angelKey;
+    private final Set<UUID> fallImmunity = new HashSet<>();
 
     public AngelsSMP() {
         this.angelKey = new NamespacedKey(this, "angelbook");
@@ -62,6 +63,16 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
                 }
             }
         }.runTaskTimer(this, 0, 20);
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onEntityDamage(EntityDamageEvent e) {
+                if (e.getEntity() instanceof Player p && e.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                    if (fallImmunity.contains(p.getUniqueId())) {
+                        e.setCancelled(true);
+                    }
+                }
+            }
+        }, this);
     }
 
     @EventHandler
@@ -83,6 +94,7 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
                 giveAngelBook(p, playerBooks.get(p.getUniqueId()));
             }
         }, 20L);
+        fallImmunity.remove(p.getUniqueId()); // Remove fall immunity on death
     }
 
     @EventHandler
@@ -179,6 +191,10 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
             p.sendMessage(ChatColor.RED + "Ability is on cooldown!");
             return;
         }
+
+        // Grant fall damage immunity for 20 seconds
+        fallImmunity.add(p.getUniqueId());
+        Bukkit.getScheduler().runTaskLater(this, () -> fallImmunity.remove(p.getUniqueId()), 20 * 20L);
 
         Location loc = p.getLocation();
         World world = p.getWorld();
