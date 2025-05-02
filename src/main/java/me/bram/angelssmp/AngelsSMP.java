@@ -38,7 +38,12 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
             }
         }
     }
-
+    @Override
+    public void onLoad() {
+        getConfig().options().copyDefaults(true);
+        saveDefaultConfig();
+        getLogger().info("AngelsSMP is loading...");
+    }
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
@@ -46,7 +51,7 @@ public class AngelsSMP extends JavaPlugin implements Listener, CommandExecutor {
             PluginCommand c = getCommand(cmd);
             if (c != null) c.setExecutor(this);
         }
-
+        getLogger().info("AngelsSMP has been enabled!");
         new BukkitRunnable() {
             public void run() {
                 for (Player p : Bukkit.getOnlinePlayers()) {
